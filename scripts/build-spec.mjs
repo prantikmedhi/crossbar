@@ -115,6 +115,9 @@ const tweetPick = (P) => [
   `created_at=${P}.legacy.created_at`,
   `author=${P}.core.user_results.result.core.screen_name`,
   `author_name=${P}.core.user_results.result.core.name`,
+  // X answers plain HTTP calls with the older user shape: name and screen_name under legacy (`_l`).
+  `author_l=${P}.core.user_results.result.legacy.screen_name`,
+  `author_name_l=${P}.core.user_results.result.legacy.name`,
   `author_id=${P}.core.user_results.result.rest_id`,
   `likes=${P}.legacy.favorite_count`,
   `reposts=${P}.legacy.retweet_count`,
@@ -130,11 +133,13 @@ const tweetPick = (P) => [
   `repost_of_id=${P}.legacy.retweeted_status_result.result.rest_id`,
   `repost_of_text=${P}.legacy.retweeted_status_result.result.legacy.full_text`,
   `repost_of_author=${P}.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name`,
+  `repost_of_author_l=${P}.legacy.retweeted_status_result.result.core.user_results.result.legacy.screen_name`,
   `media=${P}.legacy.extended_entities.media[*].media_url_https`,
   // the same post when X wraps it in TweetWithVisibilityResults
   `v_id=${P}.tweet.rest_id`,
   `v_text=${P}.tweet.legacy.full_text`,
   `v_author=${P}.tweet.core.user_results.result.core.screen_name`,
+  `v_author_l=${P}.tweet.core.user_results.result.legacy.screen_name`,
   `v_created_at=${P}.tweet.legacy.created_at`,
   "cursor=content.value",
   "cursorType=content.cursorType",
@@ -148,6 +153,7 @@ const DETAIL_PICK = [
   `thread_ids=${MOD}.rest_id`,
   `thread_texts=${MOD}.legacy.full_text`,
   `thread_authors=${MOD}.core.user_results.result.core.screen_name`,
+  `thread_authors_l=${MOD}.core.user_results.result.legacy.screen_name`,
   `thread_created=${MOD}.legacy.created_at`,
   `thread_likes=${MOD}.legacy.favorite_count`,
   `thread_reply_to=${MOD}.legacy.in_reply_to_status_id_str`,
@@ -159,6 +165,8 @@ const USER_PICK = [
   `id=${U}.rest_id`,
   `screen_name=${U}.core.screen_name`,
   `name=${U}.core.name`,
+  `screen_name_l=${U}.legacy.screen_name`,
+  `name_l=${U}.legacy.name`,
   `bio=${U}.legacy.description`,
   `bio2=${U}.profile_bio.description`,
   `followers=${U}.legacy.followers_count`,
@@ -236,8 +244,9 @@ function gqlWrite({ op, name, description, variables, slots, params, trigger, ex
 }
 
 /** A signed-in v1.1 REST call. */
-function rest({ op, description, method, path, query, form, json, slots, params, trigger, extract, pick, readOnly }) {
-  const url = `https://x.com/i/api${path}${query ? `?${new URLSearchParams(query)}` : ""}`;
+function rest({ op, description, method, path, query, form, json, slots, params, trigger, extract, pick, readOnly, base = "https://x.com/i/api" }) {
+  const url = `${base}${path}${query ? `?${new URLSearchParams(query)}` : ""}`;
+  const { host, pathname: prefix } = new URL(base);
   const contentType = form ? "application/x-www-form-urlencoded" : "application/json";
   const o = {
     name: op,
@@ -252,7 +261,7 @@ function rest({ op, description, method, path, query, form, json, slots, params,
     slots: [CSRF, ...slots],
     volatile: [],
     trigger: readOnly ? trigger : { ...trigger, companions: [] },
-    match: { method, host: "x.com", path: `/i/api${path.replace(/\/[0-9-]+\.json$/, "/*")}` },
+    match: { method, host, path: `${prefix.replace(/\/$/, "")}${path.replace(/\/[0-9-]+\.json$/, "/*")}` },
     response: { format: "json", contentType: "application/json", ...(extract ? { extract } : {}), ...(pick ? { pick } : {}) },
     params,
     readOnly,
@@ -284,11 +293,13 @@ const ops = [
     op: "me",
     description: "Who is signed in: your screen_name and account settings (language, time zone, protected).",
     method: "GET",
+    // x.com/i/api/1.1/account/settings.json answers 404 now; the web app reads it from api.x.com on every page.
+    base: "https://api.x.com",
     path: "/1.1/account/settings.json",
-    query: { include_ext_sharing_audiospaces_listening_data_with_followers: "true", include_mention_filter: "true", include_nsfw_user_flag: "true", include_nsfw_admin_flag: "true", include_ranked_timeline: "true", include_alt_text_compose: "true", ext: "ssoConnections", include_country_code: "true", include_ext_dm_nsfw_media_filter: "true" },
+    query: { include_ext_sharing_audiospaces_listening_data_with_followers: "true", include_mention_filter: "true", include_nsfw_user_flag: "true", include_nsfw_admin_flag: "true", include_ranked_timeline: "true", include_alt_text_compose: "true", include_ext_dm_av_call_settings: "true", ext: "ssoConnections", include_country_code: "true", include_ext_dm_nsfw_media_filter: "true" },
     slots: [],
     params: [],
-    trigger: { url: "https://x.com/settings/account" },
+    trigger: { url: "https://x.com/home" },
     pick: ["screen_name", "language", "protected", "time_zone.name", "country_code", "discoverable_by_email"],
     readOnly: true,
   }),
@@ -603,10 +614,11 @@ const ops = [
   }),
 ];
 
-// getUser's rest_id feeds every op that takes a userId.
+// getUser's rest_id feeds every op that takes a userId. Signed in, X refuses it (403, code 353) without
+// the csrf header; signed out there is no ct0 cookie and api-anything leaves the header off.
 const pubOps = pub.operations.map((o) =>
   o.name === "getUser"
-    ? { ...o, links: ["userTweets", "userReplies", "likedPosts", "followers", "following", "follow", "unfollow", "mute", "unmute", "block", "unblock"].map((op) => ({ from: "rest_id", to: { op, arg: "userId" } })) }
+    ? { ...o, slots: [CSRF, ...o.slots], links:["userTweets", "userReplies", "likedPosts", "followers", "following", "follow", "unfollow", "mute", "unmute", "block", "unblock"].map((op) => ({ from: "rest_id", to: { op, arg: "userId" } })) }
     : o,
 );
 
