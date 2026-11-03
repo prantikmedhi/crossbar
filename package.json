@@ -2,6 +2,31 @@
   "name": "crossbar-x",
   "version": "0.1.0",
   "description": "Crossbar: your own X (Twitter) account as an MCP server and CLI, on Linux, macOS and Windows. Built on api-anything.",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "twitter",
+    "x",
+    "twitter-api",
+    "x-api",
+    "claude",
+    "claude-code",
+    "cursor",
+    "codex",
+    "gemini-cli",
+    "ai-agents",
+    "cli",
+    "no-api-key",
+    "social-media",
+    "automation"
+  ],
+  "homepage": "https://github.com/prantikmedhi/crossbar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prantikmedhi/crossbar.git"
+  },
+  "bugs": "https://github.com/prantikmedhi/crossbar/issues",
   "type": "module",
   "license": "MIT",
   "bin": {

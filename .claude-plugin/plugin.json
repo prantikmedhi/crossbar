@@ -1,0 +1,16 @@
+{
+  "name": "crossbar",
+  "version": "0.1.0",
+  "description": "Your own X (Twitter) account as an MCP server, with skills and agents for reading, researching and posting. No API key.",
+  "author": { "name": "Prantik Medhi", "url": "https://github.com/prantikmedhi" },
+  "homepage": "https://github.com/prantikmedhi/crossbar",
+  "repository": "https://github.com/prantikmedhi/crossbar",
+  "license": "MIT",
+  "keywords": ["x", "twitter", "mcp", "social", "agents"],
+  "mcpServers": {
+    "crossbar": {
+      "command": "npx",
+      "args": ["-y", "github:prantikmedhi/crossbar", "mcp"]
+    }
+  }
+}

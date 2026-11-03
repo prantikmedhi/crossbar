@@ -1,0 +1,15 @@
+{
+  "name": "crossbar",
+  "description": "Crossbar: your own X (Twitter) account for Claude Code, as an MCP server with skills and agents.",
+  "owner": {
+    "name": "Prantik Medhi",
+    "url": "https://github.com/prantikmedhi"
+  },
+  "plugins": [
+    {
+      "name": "crossbar",
+      "source": "./",
+      "description": "Your own X (Twitter) account as an MCP server, plus skills and agents. No API key."
+    }
+  ]
+}
