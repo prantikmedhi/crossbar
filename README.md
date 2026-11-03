@@ -111,6 +111,46 @@ with `claude mcp add`, `codex mcp add`, `gemini mcp add` and `code --add-mcp`, a
 Desktop's and Cursor's JSON configs. It backs up each config to `*.bak-crossbar` before the first
 edit. `--dry-run` shows what it would change.
 
+<details>
+<summary><b>Setting up each client</b></summary>
+
+`crossbar setup` does all of this for you. To do it by hand, `crossbar mcp --print-config` prints
+the exact command or JSON for your machine, with full paths filled in.
+
+| Client | Where it goes | After |
+|---|---|---|
+| Claude Code | `claude mcp add --scope user crossbar -- <node> <crossbar.mjs> mcp` | `/mcp` to check it's connected |
+| Claude Desktop | `mcpServers` in `claude_desktop_config.json`: macOS `~/Library/Application Support/Claude/`, Windows `%APPDATA%\Claude\`, Linux `~/.config/Claude/` | quit it fully (Cmd+Q / tray → Quit) and reopen |
+| Cursor | `mcpServers` in `~/.cursor/mcp.json` | reload the window |
+| VS Code | `code --add-mcp '{"name":"crossbar",...}'` or `servers` in `.vscode/mcp.json` | start it from the MCP view |
+| Codex | `codex mcp add crossbar -- <node> <crossbar.mjs> mcp` | new session |
+| Gemini CLI | `gemini mcp add --scope user crossbar <node> <crossbar.mjs> mcp` | new session |
+| Windsurf, others | same `mcpServers` JSON as Claude Desktop | restart the client |
+
+Claude Desktop, for example:
+
+```json
+{
+  "mcpServers": {
+    "crossbar": {
+      "command": "/absolute/path/to/node",
+      "args": ["/absolute/path/to/crossbar/bin/crossbar.mjs", "mcp"]
+    }
+  }
+}
+```
+
+- **Use absolute paths.** GUI apps like Claude Desktop and Cursor don't load your shell's `PATH`,
+  so a bare `crossbar` or `npx` (especially under nvm) often fails to start. Get them with
+  `which node` and `crossbar mcp --print-config`.
+- **Sign in once.** Every client shares the session in `~/.api-anything/`, so `crossbar login`
+  covers all of them.
+- **Moved the clone or switched Node versions?** Run `crossbar setup` again to rewrite the paths.
+- **Plugin and `claude mcp add` both installed?** Claude Code shows every tool twice. Keep one:
+  `claude mcp remove crossbar` leaves only the plugin's.
+
+</details>
+
 ## 💬 What you can ask
 
 Once it's connected, just talk to your agent:
