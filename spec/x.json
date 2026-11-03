@@ -1,0 +1,4050 @@
+{
+  "name": "x",
+  "displayName": "X (Twitter)",
+  "baseUrl": "https://x.com",
+  "description": "X (Twitter) for your own account via Crossbar: home and following timelines, search, threads, profiles, bookmarks, likes, followers, notifications and DMs; and post, reply, quote, delete, like, repost, bookmark, follow, mute, block and DM. Public profiles and posts work signed out.",
+  "loginCookies": [
+    "auth_token",
+    "twid"
+  ],
+  "operations": [
+    {
+      "name": "getProfile",
+      "description": "Profile card of an X account from its server-rendered page (meta tags): name, bio, avatar, banner, post count as displayed (e.g. \"74.3K\"), join month. No follower count. Fallback if getUser breaks.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/%7Bscreen_name%7D",
+        "headers": {
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "accept-language": "en-US,en;q=0.9",
+          "priority": "u=0, i",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "document",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-site": "none",
+          "sec-fetch-user": "?1",
+          "upgrade-insecure-requests": "1",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "screen_name",
+          "at": [
+            "path:0"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/{screen_name}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/*"
+      },
+      "response": {
+        "format": "html",
+        "contentType": "text/html; charset=UTF-8",
+        "html": {
+          "items": "head",
+          "fields": {
+            "title": "meta[property=\"og:title\"]@content",
+            "screen_name": "meta[property=\"profile:username\"]@content",
+            "bio": "meta[name=\"description\"]@content",
+            "avatar": "meta[property=\"og:image\"]@content",
+            "banner": "meta[name=\"twitter:image\"]@content",
+            "posts": "meta[name=\"twitter:data1\"]@content",
+            "joined": "meta[name=\"twitter:data2\"]@content",
+            "url": "meta[property=\"og:url\"]@content"
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "screen_name",
+          "type": "string",
+          "required": true,
+          "example": "nasa",
+          "description": "account handle without @, e.g. nasa"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "learnedAt": "2026-09-27T11:07:35.213Z"
+    },
+    {
+      "name": "getUser",
+      "description": "Public profile of an X account by screen name: id, name, bio, location, follower/following/post counts, verification, avatar. Uses the UserByScreenName GraphQL query with the public web-app bearer; no account needed.",
+      "request": {
+        "method": "GET",
+        "url": "https://api.x.com/graphql/6tXRska4Vx-MZLENLErFmg/UserByScreenName?variables=%7B%22screenName%22%3A%22%7Bscreen_name%7D%22%2C%22__relay_internal__pv__appviewerisloggedinprovider%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "priority": "u=1, i",
+          "referer": "https://x.com/",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-site",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "x-twitter-active-user": "yes",
+          "x-twitter-client-language": "en"
+        }
+      },
+      "slots": [
+        {
+          "param": "screen_name",
+          "at": [
+            "query:variables",
+            "json:/screenName"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:1"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "UserByScreenName"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/{screen_name}",
+        "softFrom": "https://x.com/spacex"
+      },
+      "match": {
+        "method": "GET",
+        "host": "api.x.com",
+        "path": "/graphql/*/UserByScreenName"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user_result_by_screen_name.result",
+        "pick": [
+          "rest_id",
+          "core.name",
+          "core.screen_name",
+          "core.created_at_ms",
+          "profile_bio.description",
+          "location.location",
+          "relationship_counts.followers",
+          "relationship_counts.following",
+          "tweet_counts.tweets",
+          "verification.is_blue_verified",
+          "verification.verified_type",
+          "privacy.protected",
+          "avatar.image_url",
+          "banner.image_url"
+        ],
+        "shape": {
+          "data": "object",
+          "data.user_result_by_screen_name": "object",
+          "data.user_result_by_screen_name.id": "string",
+          "data.user_result_by_screen_name.result": "object",
+          "data.user_result_by_screen_name.result.__typename": "string",
+          "data.user_result_by_screen_name.result.affiliates_highlighted_label": "object",
+          "data.user_result_by_screen_name.result.avatar": "object",
+          "data.user_result_by_screen_name.result.avatar.image_url": "string",
+          "data.user_result_by_screen_name.result.banner": "object",
+          "data.user_result_by_screen_name.result.banner.image_url": "string",
+          "data.user_result_by_screen_name.result.business_account": "object",
+          "data.user_result_by_screen_name.result.business_account.affiliates_count": "number",
+          "data.user_result_by_screen_name.result.can_view_expanded_profile": "boolean",
+          "data.user_result_by_screen_name.result.core": "object",
+          "data.user_result_by_screen_name.result.core.created_at_ms": "number",
+          "data.user_result_by_screen_name.result.core.name": "string",
+          "data.user_result_by_screen_name.result.core.screen_name": "string",
+          "data.user_result_by_screen_name.result.creator_subscriptions_count": "number",
+          "data.user_result_by_screen_name.result.grok_translated_bio_with_availability": "object",
+          "data.user_result_by_screen_name.result.grok_translated_bio_with_availability.is_available": "boolean",
+          "data.user_result_by_screen_name.result.has_hidden_subscriptions_on_profile": "boolean",
+          "data.user_result_by_screen_name.result.highlights_info": "object",
+          "data.user_result_by_screen_name.result.highlights_info.can_highlight_tweets": "boolean",
+          "data.user_result_by_screen_name.result.highlights_info.highlighted_tweets": "string",
+          "data.user_result_by_screen_name.result.id": "string",
+          "data.user_result_by_screen_name.result.identity_profile_labels_highlighted_label": "object",
+          "data.user_result_by_screen_name.result.legacy": "object",
+          "data.user_result_by_screen_name.result.legacy_extended_profile": "object",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate": "object",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate.day": "number",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate.month": "number",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate.visibility": "string",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate.year": "number",
+          "data.user_result_by_screen_name.result.legacy_extended_profile.birthdate.year_visibility": "string",
+          "data.user_result_by_screen_name.result.location": "object",
+          "data.user_result_by_screen_name.result.location.location": "string",
+          "data.user_result_by_screen_name.result.possibly_sensitive": "boolean",
+          "data.user_result_by_screen_name.result.privacy": "object",
+          "data.user_result_by_screen_name.result.privacy.protected": "boolean",
+          "data.user_result_by_screen_name.result.profile_bio": "object",
+          "data.user_result_by_screen_name.result.profile_bio.description": "string",
+          "data.user_result_by_screen_name.result.profile_bio.entities": "object",
+          "data.user_result_by_screen_name.result.profile_bio.entities.description": "object",
+          "data.user_result_by_screen_name.result.profile_bio.entities.url": "object",
+          "data.user_result_by_screen_name.result.profile_image_shape": "string",
+          "data.user_result_by_screen_name.result.relationship_counts": "object",
+          "data.user_result_by_screen_name.result.relationship_counts.followers": "number",
+          "data.user_result_by_screen_name.result.relationship_counts.following": "number",
+          "data.user_result_by_screen_name.result.rest_id": "string",
+          "data.user_result_by_screen_name.result.subscribers_count": "number",
+          "data.user_result_by_screen_name.result.super_follow_eligible": "boolean",
+          "data.user_result_by_screen_name.result.tweet_counts": "object",
+          "data.user_result_by_screen_name.result.tweet_counts.tweets": "number",
+          "data.user_result_by_screen_name.result.user_seed_tweet_count": "number",
+          "data.user_result_by_screen_name.result.verification": "object",
+          "data.user_result_by_screen_name.result.verification.is_blue_verified": "boolean",
+          "data.user_result_by_screen_name.result.verification.verified": "boolean",
+          "data.user_result_by_screen_name.result.verification.verified_type": "string"
+        }
+      },
+      "params": [
+        {
+          "name": "screen_name",
+          "type": "string",
+          "required": true,
+          "example": "nasa",
+          "description": "account handle without @, e.g. nasa"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "learnedAt": "2026-09-27T11:08:26.327Z",
+      "links": [
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "userTweets",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "userReplies",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "likedPosts",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "followers",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "following",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "follow",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "unfollow",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "mute",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "unmute",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "block",
+            "arg": "userId"
+          }
+        },
+        {
+          "from": "rest_id",
+          "to": {
+            "op": "unblock",
+            "arg": "userId"
+          }
+        }
+      ]
+    },
+    {
+      "name": "getTweet",
+      "description": "Read a public post by ID from its server-rendered page: displayed text, author, time, engagement labels and image URLs. Counts are labels, not numeric fields.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/XDevelopers/status/%7BtweetId%7D",
+        "headers": {
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "accept-language": "en-US,en;q=0.9",
+          "priority": "u=0, i",
+          "sec-ch-ua": "\"Not:A-Brand\";v=\"8\", \"Chromium\";v=\"156\", \"Google Chrome\";v=\"156\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "document",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-site": "none",
+          "sec-fetch-user": "?1",
+          "upgrade-insecure-requests": "1",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "tweetId",
+          "at": [
+            "path:2"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/*/status/*"
+      },
+      "response": {
+        "format": "html",
+        "contentType": "text/html; charset=UTF-8",
+        "html": {
+          "items": "article",
+          "fields": {
+            "text": "div[dir=auto]",
+            "name": "a[href] div.text-body",
+            "screen_name": "a[href] span.text-secondary",
+            "created_at": "a[data-base-ui-tooltip-trigger][href*=\"/status/\"]",
+            "replies": "[data-engagement-action=reply] [aria-label]@aria-label",
+            "reposts": "[data-engagement-action=retweet] [aria-label]@aria-label",
+            "likes": "[data-engagement-action=like] [aria-label]@aria-label",
+            "media_urls": "all:img[src*=\"pbs.twimg.com/media/\"]@src"
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "example": "1354143047324299264",
+          "description": "post ID as a decimal string from its status URL"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "tweetId": "20"
+          },
+          "expect": "result",
+          "purpose": "A different public post returns its own content"
+        },
+        {
+          "args": {
+            "tweetId": "2116263878807998722"
+          },
+          "expect": "result",
+          "purpose": "NASA post includes visible text and media"
+        },
+        {
+          "args": {
+            "tweetId": "1362503219430723584"
+          },
+          "expect": "input",
+          "purpose": "Missing post returns 404"
+        }
+      ]
+    },
+    {
+      "name": "me",
+      "description": "Who is signed in: your screen_name and account settings (language, time zone, protected). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/1.1/account/settings.json?include_ext_sharing_audiospaces_listening_data_with_followers=true&include_mention_filter=true&include_nsfw_user_flag=true&include_nsfw_admin_flag=true&include_ranked_timeline=true&include_alt_text_compose=true&ext=ssoConnections&include_country_code=true&include_ext_dm_nsfw_media_filter=true",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/settings/account"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/1.1/account/settings.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "screen_name",
+          "language",
+          "protected",
+          "time_zone.name",
+          "country_code",
+          "discoverable_by_email"
+        ]
+      },
+      "params": [],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "homeTimeline",
+      "description": "Your For You timeline: posts with text, author, counts and whether you liked/reposted/bookmarked them. Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/c-CzHF1LboFilMpsx4ZCrQ/HomeTimeline?variables=%7B%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%2C%22latestControlAvailable%22%3Atrue%2C%22requestContext%22%3A%22launch%22%2C%22withCommunity%22%3Atrue%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "HomeTimeline"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/home"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/HomeTimeline"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.home.home_timeline_urt.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "latestTimeline",
+      "description": "Your Following timeline, newest first (only accounts you follow). Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/BKB7oi212Fi7kQtCBGE4zA/HomeLatestTimeline?variables=%7B%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%2C%22latestControlAvailable%22%3Atrue%2C%22requestContext%22%3A%22launch%22%2C%22withCommunity%22%3Atrue%2C%22seenTweetIds%22%3A%5B%5D%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "HomeLatestTimeline"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/home",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "a[role=\"tab\"]:has-text(\"Following\")"
+          },
+          {
+            "action": "wait",
+            "ms": 2500
+          }
+        ]
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/HomeLatestTimeline"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.home.home_timeline_urt.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "searchPosts",
+      "description": "Search posts on X with X's search syntax (from:user, since:2026-01-01, filter:media, lang:en, \"exact phrase\"). product Top, Latest or Media. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/VhUd6vHVmLBcw0uX-6jMLA/SearchTimeline?variables=%7B%22rawQuery%22%3A%22crossbar%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22querySource%22%3A%22typed_query%22%2C%22product%22%3A%22Top%22%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "query",
+          "at": [
+            "query:variables",
+            "json:/rawQuery"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        },
+        {
+          "param": "product",
+          "at": [
+            "query:variables",
+            "json:/product"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "SearchTimeline"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/search?q={query}&src=typed_query&f=live"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/SearchTimeline"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.search_by_raw_query.search_timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "search words, with X's operators if wanted",
+          "example": "sqlite"
+        },
+        {
+          "name": "product",
+          "type": "string",
+          "required": false,
+          "default": "Latest",
+          "enum": [
+            "Top",
+            "Latest",
+            "Media"
+          ],
+          "description": "Top (popular), Latest (newest first) or Media"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "searchPeople",
+      "description": "Search accounts on X by name, handle or bio words. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/VhUd6vHVmLBcw0uX-6jMLA/SearchTimeline?variables=%7B%22rawQuery%22%3A%22crossbar%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22querySource%22%3A%22typed_query%22%2C%22product%22%3A%22People%22%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "query",
+          "at": [
+            "query:variables",
+            "json:/rawQuery"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "SearchTimeline"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/search?q={query}&src=typed_query&f=user"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/SearchTimeline"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.search_by_raw_query.search_timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.user_results.result.rest_id",
+          "screen_name=content.itemContent.user_results.result.core.screen_name",
+          "name=content.itemContent.user_results.result.core.name",
+          "bio=content.itemContent.user_results.result.legacy.description",
+          "bio2=content.itemContent.user_results.result.profile_bio.description",
+          "followers=content.itemContent.user_results.result.legacy.followers_count",
+          "following=content.itemContent.user_results.result.legacy.friends_count",
+          "verified=content.itemContent.user_results.result.is_blue_verified",
+          "you_follow=content.itemContent.user_results.result.relationship_perspectives.following",
+          "follows_you=content.itemContent.user_results.result.relationship_perspectives.followed_by",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "name, handle or words",
+          "example": "nasa"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "getThread",
+      "description": "A post with its thread and replies (signed in, so replies are included). thread_* lists hold the replies in each conversation module. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/_8aYOgEDz35BrBcBal1-_w/TweetDetail?variables=%7B%22focalTweetId%22%3A%221354143047324299264%22%2C%22with_rux_injections%22%3Afalse%2C%22rankingMode%22%3A%22Relevance%22%2C%22includePromotedContent%22%3Afalse%2C%22withCommunity%22%3Atrue%2C%22withQuickPromoteEligibilityTweetFields%22%3Atrue%2C%22withBirdwatchNotes%22%3Atrue%2C%22withVoice%22%3Atrue%2C%22cursor%22%3Anull%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "query:variables",
+            "json:/focalTweetId"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "TweetDetail"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/TweetDetail"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.threaded_conversation_with_injections_v2.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType",
+          "thread_ids=content.items[*].item.itemContent.tweet_results.result.rest_id",
+          "thread_texts=content.items[*].item.itemContent.tweet_results.result.legacy.full_text",
+          "thread_authors=content.items[*].item.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "thread_created=content.items[*].item.itemContent.tweet_results.result.legacy.created_at",
+          "thread_likes=content.items[*].item.itemContent.tweet_results.result.legacy.favorite_count",
+          "thread_reply_to=content.items[*].item.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "cursor=content.value"
+        ]
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "userTweets",
+      "description": "An account's posts by numeric user id, newest first (pinned post first). Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/Y9WM4Id6UcGFE8Z-hbnixw/UserTweets?variables=%7B%22userId%22%3A%2211348282%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%2C%22withQuickPromoteEligibilityTweetFields%22%3Atrue%2C%22withVoice%22%3Atrue%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "query:variables",
+            "json:/userId"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "UserTweets"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/UserTweets"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user.result.timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "userReplies",
+      "description": "An account's posts and replies by numeric user id. Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/pz0IHaV_t7T4HJavqqqcIA/UserTweetsAndReplies?variables=%7B%22userId%22%3A%2211348282%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%2C%22withCommunity%22%3Atrue%2C%22withVoice%22%3Atrue%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "query:variables",
+            "json:/userId"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "UserTweetsAndReplies"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "a[role=\"tab\"][href$=\"/with_replies\"]"
+          },
+          {
+            "action": "wait",
+            "ms": 2500
+          }
+        ]
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/UserTweetsAndReplies"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user.result.timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "likedPosts",
+      "description": "Posts an account liked (X shows likes only for your own account). Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/fuBEtiFu3uQFuPDTsv4bfg/Likes?variables=%7B%22userId%22%3A%2211348282%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%2C%22withClientEventToken%22%3Afalse%2C%22withBirdwatchNotes%22%3Afalse%2C%22withVoice%22%3Atrue%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "query:variables",
+            "json:/userId"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "Likes"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "a[role=\"tab\"][href$=\"/likes\"]"
+          },
+          {
+            "action": "wait",
+            "ms": 2500
+          }
+        ]
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/Likes"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user.result.timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "bookmarks",
+      "description": "Your bookmarked posts, newest bookmark first. Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/UyNF_BgJ5d5MbtuVukyl7A/Bookmarks?variables=%7B%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "Bookmarks"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/bookmarks"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/Bookmarks"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.bookmark_timeline_v2.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.tweet_results.result.rest_id",
+          "text=content.itemContent.tweet_results.result.legacy.full_text",
+          "long_text=content.itemContent.tweet_results.result.note_tweet.note_tweet_results.result.text",
+          "created_at=content.itemContent.tweet_results.result.legacy.created_at",
+          "author=content.itemContent.tweet_results.result.core.user_results.result.core.screen_name",
+          "author_name=content.itemContent.tweet_results.result.core.user_results.result.core.name",
+          "author_id=content.itemContent.tweet_results.result.core.user_results.result.rest_id",
+          "likes=content.itemContent.tweet_results.result.legacy.favorite_count",
+          "reposts=content.itemContent.tweet_results.result.legacy.retweet_count",
+          "replies=content.itemContent.tweet_results.result.legacy.reply_count",
+          "quotes=content.itemContent.tweet_results.result.legacy.quote_count",
+          "bookmarks=content.itemContent.tweet_results.result.legacy.bookmark_count",
+          "views=content.itemContent.tweet_results.result.views.count",
+          "liked=content.itemContent.tweet_results.result.legacy.favorited",
+          "reposted=content.itemContent.tweet_results.result.legacy.retweeted",
+          "bookmarked=content.itemContent.tweet_results.result.legacy.bookmarked",
+          "in_reply_to=content.itemContent.tweet_results.result.legacy.in_reply_to_status_id_str",
+          "quoted_id=content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+          "repost_of_id=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.rest_id",
+          "repost_of_text=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.legacy.full_text",
+          "repost_of_author=content.itemContent.tweet_results.result.legacy.retweeted_status_result.result.core.user_results.result.core.screen_name",
+          "media=content.itemContent.tweet_results.result.legacy.extended_entities.media[*].media_url_https",
+          "v_id=content.itemContent.tweet_results.result.tweet.rest_id",
+          "v_text=content.itemContent.tweet_results.result.tweet.legacy.full_text",
+          "v_author=content.itemContent.tweet_results.result.tweet.core.user_results.result.core.screen_name",
+          "v_created_at=content.itemContent.tweet_results.result.tweet.legacy.created_at",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "followers",
+      "description": "Accounts that follow a user (numeric user id). Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/IOh4aS6UdGWGJUYTqliQ7Q/Followers?variables=%7B%22userId%22%3A%2211348282%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "query:variables",
+            "json:/userId"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "Followers"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "a[href$=\"/followers\"]"
+          },
+          {
+            "action": "wait",
+            "ms": 2500
+          }
+        ]
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/Followers"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user.result.timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.user_results.result.rest_id",
+          "screen_name=content.itemContent.user_results.result.core.screen_name",
+          "name=content.itemContent.user_results.result.core.name",
+          "bio=content.itemContent.user_results.result.legacy.description",
+          "bio2=content.itemContent.user_results.result.profile_bio.description",
+          "followers=content.itemContent.user_results.result.legacy.followers_count",
+          "following=content.itemContent.user_results.result.legacy.friends_count",
+          "verified=content.itemContent.user_results.result.is_blue_verified",
+          "you_follow=content.itemContent.user_results.result.relationship_perspectives.following",
+          "follows_you=content.itemContent.user_results.result.relationship_perspectives.followed_by",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "following",
+      "description": "Accounts a user follows (numeric user id). Paged by cursor. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/graphql/zx6e-TLzRkeDO_a7p4b3JQ/Following?variables=%7B%22userId%22%3A%2211348282%22%2C%22count%22%3A20%2C%22cursor%22%3Anull%2C%22includePromotedContent%22%3Afalse%7D&features=%7B%22rweb_video_screen_enabled%22%3Afalse%2C%22payments_enabled%22%3Afalse%2C%22profile_label_improvements_pcf_label_in_post_enabled%22%3Atrue%2C%22rweb_tipjar_consumption_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22creator_subscriptions_tweet_preview_api_enabled%22%3Atrue%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%2C%22responsive_web_graphql_skip_user_profile_image_extensions_enabled%22%3Afalse%2C%22premium_content_api_read_enabled%22%3Afalse%2C%22communities_web_enable_tweet_community_results_fetch%22%3Atrue%2C%22c9s_tweet_anatomy_moderator_badge_enabled%22%3Atrue%2C%22responsive_web_grok_analyze_button_fetch_trends_enabled%22%3Afalse%2C%22responsive_web_grok_analyze_post_followups_enabled%22%3Atrue%2C%22responsive_web_jetfuel_frame%22%3Atrue%2C%22responsive_web_grok_share_attachment_enabled%22%3Atrue%2C%22articles_preview_enabled%22%3Atrue%2C%22responsive_web_edit_tweet_api_enabled%22%3Atrue%2C%22graphql_is_translatable_rweb_tweet_is_translatable_enabled%22%3Atrue%2C%22view_counts_everywhere_api_enabled%22%3Atrue%2C%22longform_notetweets_consumption_enabled%22%3Atrue%2C%22responsive_web_twitter_article_tweet_consumption_enabled%22%3Atrue%2C%22tweet_awards_web_tipping_enabled%22%3Afalse%2C%22responsive_web_grok_show_grok_translated_post%22%3Afalse%2C%22responsive_web_grok_analysis_button_from_backend%22%3Atrue%2C%22creator_subscriptions_quote_tweet_preview_enabled%22%3Afalse%2C%22freedom_of_speech_not_reach_fetch_enabled%22%3Atrue%2C%22standardized_nudges_misinfo%22%3Atrue%2C%22tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled%22%3Atrue%2C%22longform_notetweets_rich_text_read_enabled%22%3Atrue%2C%22longform_notetweets_inline_media_enabled%22%3Atrue%2C%22responsive_web_grok_image_annotation_enabled%22%3Atrue%2C%22responsive_web_grok_community_note_auto_translation_is_enabled%22%3Afalse%2C%22responsive_web_enhance_cards_enabled%22%3Afalse%7D&fieldToggles=%7B%22withArticlePlainText%22%3Afalse%2C%22withArticleRichContentState%22%3Afalse%2C%22withAuxiliaryUserLabels%22%3Afalse%7D",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "query:variables",
+            "json:/userId"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:variables",
+            "json:/count"
+          ]
+        },
+        {
+          "param": "cursor",
+          "at": [
+            "query:variables",
+            "json:/cursor"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "Following"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "a[href$=\"/following\"]"
+          },
+          {
+            "action": "wait",
+            "ms": 2500
+          }
+        ]
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/Following"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.user.result.timeline.timeline.instructions[*].entries",
+        "pick": [
+          "entryId",
+          "id=content.itemContent.user_results.result.rest_id",
+          "screen_name=content.itemContent.user_results.result.core.screen_name",
+          "name=content.itemContent.user_results.result.core.name",
+          "bio=content.itemContent.user_results.result.legacy.description",
+          "bio2=content.itemContent.user_results.result.profile_bio.description",
+          "followers=content.itemContent.user_results.result.legacy.followers_count",
+          "following=content.itemContent.user_results.result.legacy.friends_count",
+          "verified=content.itemContent.user_results.result.is_blue_verified",
+          "you_follow=content.itemContent.user_results.result.relationship_perspectives.following",
+          "follows_you=content.itemContent.user_results.result.relationship_perspectives.followed_by",
+          "cursor=content.value",
+          "cursorType=content.cursorType"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "the cursor (cursorType Bottom) from the previous page's answer, for the next page"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "notifications",
+      "description": "Your notifications (likes, reposts, follows, mentions): each one's message text and time. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/2/notifications/all.json?include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&skip_status=1&cards_platform=Web-12&include_cards=1&include_ext_alt_text=true&include_quote_count=true&include_reply_count=1&tweet_mode=extended&include_entities=true&include_user_entities=true&include_ext_media_color=true&include_ext_media_availability=true&send_error_codes=true&simple_quoted_tweet=true&count=20&ext=mediaStats%2ChighlightedLabel%2CvoiceInfo",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:count"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/notifications"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/2/notifications/all.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "globalObjects.notifications"
+      },
+      "params": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "mentions",
+      "description": "Posts that mention you (the Mentions tab of notifications). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/2/notifications/mentions.json?include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_can_dm=1&skip_status=1&cards_platform=Web-12&include_cards=1&include_quote_count=true&include_reply_count=1&tweet_mode=extended&include_entities=true&send_error_codes=true&simple_quoted_tweet=true&count=20",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "count",
+          "at": [
+            "query:count"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/notifications/mentions"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/2/notifications/mentions.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "globalObjects.tweets"
+      },
+      "params": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "description": "how many items to ask X for (X may return a few more or fewer)"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "dmInbox",
+      "description": "Your direct-message inbox: the latest messages with conversation_id, sender id, text and time. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/1.1/dm/inbox_initial_state.json?nsfw_filtering_enabled=false&filter_low_quality=true&include_quality=all&include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_can_dm=1&skip_status=1&dm_secret_conversations_enabled=false&cards_platform=Web-12&include_cards=1&include_ext_alt_text=true&include_quote_count=true&include_reply_count=1&tweet_mode=extended&include_ext_collab_control=true&dm_users=true&include_groups=true&include_inbox_timelines=true&include_ext_media_color=true&supports_reactions=true&supports_edit=true&include_ext_edit_control=true",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/messages"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/1.1/dm/inbox_initial_state.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "inbox_initial_state.entries",
+        "pick": [
+          "conversation_id=message.conversation_id",
+          "message_id=message.id",
+          "sender_id=message.message_data.sender_id",
+          "recipient_id=message.message_data.recipient_id",
+          "text=message.message_data.text",
+          "time=message.message_data.time"
+        ]
+      },
+      "params": [],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "dmConversation",
+      "description": "Messages in one DM conversation (conversation_id from dmInbox), newest first. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "GET",
+        "url": "https://x.com/i/api/1.1/dm/conversation/11348282-783214.json?context=FETCH_DM_CONVERSATION&include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_can_dm=1&skip_status=1&dm_secret_conversations_enabled=false&cards_platform=Web-12&include_cards=1&tweet_mode=extended&dm_users=false&include_groups=true&include_conversation_info=true&supports_reactions=true&supports_edit=true",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        }
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "conversationId",
+          "at": [
+            "path:5"
+          ],
+          "template": "{conversationId}.json"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/messages/{conversationId}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "x.com",
+        "path": "/i/api/1.1/dm/conversation/*"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "conversation_timeline.entries",
+        "pick": [
+          "message_id=message.id",
+          "sender_id=message.message_data.sender_id",
+          "text=message.message_data.text",
+          "time=message.message_data.time"
+        ]
+      },
+      "params": [
+        {
+          "name": "conversationId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]+(-[0-9]+)?",
+          "hint": "like 123-456 for a 1:1 chat, or a group's number",
+          "description": "conversation_id from dmInbox",
+          "example": "11348282-783214"
+        }
+      ],
+      "readOnly": true,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "createPost",
+      "description": "Post to X from your account. Returns the new post's id. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/IID9x6WsdMnTlXnzXGq8ng/CreateTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_text\":\"Hello from Crossbar\",\"dark_request\":false,\"media\":{\"media_entities\":[],\"possibly_sensitive\":false},\"semantic_annotation_ids\":[],\"disallowed_reply_options\":null},\"features\":{\"rweb_video_screen_enabled\":false,\"payments_enabled\":false,\"profile_label_improvements_pcf_label_in_post_enabled\":true,\"rweb_tipjar_consumption_enabled\":true,\"verified_phone_label_enabled\":false,\"creator_subscriptions_tweet_preview_api_enabled\":true,\"responsive_web_graphql_timeline_navigation_enabled\":true,\"responsive_web_graphql_skip_user_profile_image_extensions_enabled\":false,\"premium_content_api_read_enabled\":false,\"communities_web_enable_tweet_community_results_fetch\":true,\"c9s_tweet_anatomy_moderator_badge_enabled\":true,\"responsive_web_grok_analyze_button_fetch_trends_enabled\":false,\"responsive_web_grok_analyze_post_followups_enabled\":true,\"responsive_web_jetfuel_frame\":true,\"responsive_web_grok_share_attachment_enabled\":true,\"articles_preview_enabled\":true,\"responsive_web_edit_tweet_api_enabled\":true,\"graphql_is_translatable_rweb_tweet_is_translatable_enabled\":true,\"view_counts_everywhere_api_enabled\":true,\"longform_notetweets_consumption_enabled\":true,\"responsive_web_twitter_article_tweet_consumption_enabled\":true,\"tweet_awards_web_tipping_enabled\":false,\"responsive_web_grok_show_grok_translated_post\":false,\"responsive_web_grok_analysis_button_from_backend\":true,\"creator_subscriptions_quote_tweet_preview_enabled\":false,\"freedom_of_speech_not_reach_fetch_enabled\":true,\"standardized_nudges_misinfo\":true,\"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled\":true,\"longform_notetweets_rich_text_read_enabled\":true,\"longform_notetweets_inline_media_enabled\":true,\"responsive_web_grok_image_annotation_enabled\":true,\"responsive_web_grok_community_note_auto_translation_is_enabled\":false,\"responsive_web_enhance_cards_enabled\":false},\"queryId\":\"IID9x6WsdMnTlXnzXGq8ng\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "text",
+          "at": [
+            "body",
+            "json:/variables/tweet_text"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/compose/post",
+        "steps": [
+          {
+            "action": "fill",
+            "selector": "[data-testid=\"tweetTextarea_0\"]",
+            "value": "{text}"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"tweetButton\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/CreateTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.create_tweet.tweet_results.result",
+        "pick": [
+          "id=rest_id",
+          "text=legacy.full_text",
+          "created_at=legacy.created_at"
+        ]
+      },
+      "params": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "the post's text (up to 280 characters; more needs X Premium)",
+          "example": "Hello from Crossbar"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "reply",
+      "description": "Reply to a post from your account. Returns the reply's id. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/IID9x6WsdMnTlXnzXGq8ng/CreateTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_text\":\"Nice post\",\"reply\":{\"in_reply_to_tweet_id\":\"1354143047324299264\",\"exclude_reply_user_ids\":[]},\"dark_request\":false,\"media\":{\"media_entities\":[],\"possibly_sensitive\":false},\"semantic_annotation_ids\":[],\"disallowed_reply_options\":null},\"features\":{\"rweb_video_screen_enabled\":false,\"payments_enabled\":false,\"profile_label_improvements_pcf_label_in_post_enabled\":true,\"rweb_tipjar_consumption_enabled\":true,\"verified_phone_label_enabled\":false,\"creator_subscriptions_tweet_preview_api_enabled\":true,\"responsive_web_graphql_timeline_navigation_enabled\":true,\"responsive_web_graphql_skip_user_profile_image_extensions_enabled\":false,\"premium_content_api_read_enabled\":false,\"communities_web_enable_tweet_community_results_fetch\":true,\"c9s_tweet_anatomy_moderator_badge_enabled\":true,\"responsive_web_grok_analyze_button_fetch_trends_enabled\":false,\"responsive_web_grok_analyze_post_followups_enabled\":true,\"responsive_web_jetfuel_frame\":true,\"responsive_web_grok_share_attachment_enabled\":true,\"articles_preview_enabled\":true,\"responsive_web_edit_tweet_api_enabled\":true,\"graphql_is_translatable_rweb_tweet_is_translatable_enabled\":true,\"view_counts_everywhere_api_enabled\":true,\"longform_notetweets_consumption_enabled\":true,\"responsive_web_twitter_article_tweet_consumption_enabled\":true,\"tweet_awards_web_tipping_enabled\":false,\"responsive_web_grok_show_grok_translated_post\":false,\"responsive_web_grok_analysis_button_from_backend\":true,\"creator_subscriptions_quote_tweet_preview_enabled\":false,\"freedom_of_speech_not_reach_fetch_enabled\":true,\"standardized_nudges_misinfo\":true,\"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled\":true,\"longform_notetweets_rich_text_read_enabled\":true,\"longform_notetweets_inline_media_enabled\":true,\"responsive_web_grok_image_annotation_enabled\":true,\"responsive_web_grok_community_note_auto_translation_is_enabled\":false,\"responsive_web_enhance_cards_enabled\":false},\"queryId\":\"IID9x6WsdMnTlXnzXGq8ng\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "text",
+          "at": [
+            "body",
+            "json:/variables/tweet_text"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/reply/in_reply_to_tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "fill",
+            "selector": "[data-testid=\"tweetTextarea_0\"]",
+            "value": "{text}"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"tweetButtonInline\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/CreateTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.create_tweet.tweet_results.result",
+        "pick": [
+          "id=rest_id",
+          "text=legacy.full_text",
+          "in_reply_to=legacy.in_reply_to_status_id_str"
+        ]
+      },
+      "params": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "the post's text (up to 280 characters; more needs X Premium)",
+          "example": "Hello from Crossbar"
+        },
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "quotePost",
+      "description": "Quote a post with your own text. Returns the new post's id. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/IID9x6WsdMnTlXnzXGq8ng/CreateTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_text\":\"Worth reading\",\"attachment_url\":\"https://x.com/i/status/1354143047324299264\",\"dark_request\":false,\"media\":{\"media_entities\":[],\"possibly_sensitive\":false},\"semantic_annotation_ids\":[],\"disallowed_reply_options\":null},\"features\":{\"rweb_video_screen_enabled\":false,\"payments_enabled\":false,\"profile_label_improvements_pcf_label_in_post_enabled\":true,\"rweb_tipjar_consumption_enabled\":true,\"verified_phone_label_enabled\":false,\"creator_subscriptions_tweet_preview_api_enabled\":true,\"responsive_web_graphql_timeline_navigation_enabled\":true,\"responsive_web_graphql_skip_user_profile_image_extensions_enabled\":false,\"premium_content_api_read_enabled\":false,\"communities_web_enable_tweet_community_results_fetch\":true,\"c9s_tweet_anatomy_moderator_badge_enabled\":true,\"responsive_web_grok_analyze_button_fetch_trends_enabled\":false,\"responsive_web_grok_analyze_post_followups_enabled\":true,\"responsive_web_jetfuel_frame\":true,\"responsive_web_grok_share_attachment_enabled\":true,\"articles_preview_enabled\":true,\"responsive_web_edit_tweet_api_enabled\":true,\"graphql_is_translatable_rweb_tweet_is_translatable_enabled\":true,\"view_counts_everywhere_api_enabled\":true,\"longform_notetweets_consumption_enabled\":true,\"responsive_web_twitter_article_tweet_consumption_enabled\":true,\"tweet_awards_web_tipping_enabled\":false,\"responsive_web_grok_show_grok_translated_post\":false,\"responsive_web_grok_analysis_button_from_backend\":true,\"creator_subscriptions_quote_tweet_preview_enabled\":false,\"freedom_of_speech_not_reach_fetch_enabled\":true,\"standardized_nudges_misinfo\":true,\"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled\":true,\"longform_notetweets_rich_text_read_enabled\":true,\"longform_notetweets_inline_media_enabled\":true,\"responsive_web_grok_image_annotation_enabled\":true,\"responsive_web_grok_community_note_auto_translation_is_enabled\":false,\"responsive_web_enhance_cards_enabled\":false},\"queryId\":\"IID9x6WsdMnTlXnzXGq8ng\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "text",
+          "at": [
+            "body",
+            "json:/variables/tweet_text"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/attachment_url"
+          ],
+          "template": "https://x.com/i/status/{tweetId}"
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"retweet\"]"
+          },
+          {
+            "action": "click",
+            "selector": "a[role=\"menuitem\"][href*=\"compose\"]"
+          },
+          {
+            "action": "fill",
+            "selector": "[data-testid=\"tweetTextarea_0\"]",
+            "value": "{text}"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"tweetButton\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/CreateTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "data.create_tweet.tweet_results.result",
+        "pick": [
+          "id=rest_id",
+          "text=legacy.full_text",
+          "quoted_id=legacy.quoted_status_id_str"
+        ]
+      },
+      "params": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "the post's text (up to 280 characters; more needs X Premium)",
+          "example": "Hello from Crossbar"
+        },
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "deletePost",
+      "description": "Delete one of your own posts. Permanent. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/VaenaVgh5q5ih7kvyVjgtg/DeleteTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\",\"dark_request\":false},\"queryId\":\"VaenaVgh5q5ih7kvyVjgtg\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"caret\"]"
+          },
+          {
+            "action": "click",
+            "selector": "[role=\"menuitem\"]:has-text(\"Delete\")"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"confirmationSheetConfirm\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/DeleteTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "like",
+      "description": "Like a post. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\"},\"queryId\":\"lI07N6Otwv1PhnEgXILM7A\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "FavoriteTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "FavoriteTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"like\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/FavoriteTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "unlike",
+      "description": "Remove your like from a post. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/ZYKSe-w7KEslx3JhSIk5LA/UnfavoriteTweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\"},\"queryId\":\"ZYKSe-w7KEslx3JhSIk5LA\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "UnfavoriteTweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "UnfavoriteTweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"unlike\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/UnfavoriteTweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "repost",
+      "description": "Repost (retweet) a post. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/ojPdsZsimiJrUGLR1sjUtA/CreateRetweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\",\"dark_request\":false},\"queryId\":\"ojPdsZsimiJrUGLR1sjUtA\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateRetweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateRetweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"retweet\"]"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"retweetConfirm\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/CreateRetweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "undoRepost",
+      "description": "Undo your repost of a post (give the original post's id). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/iQtK4dl5hBmXewYZuEOKVw/DeleteRetweet",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"source_tweet_id\":\"1354143047324299264\",\"dark_request\":false},\"queryId\":\"iQtK4dl5hBmXewYZuEOKVw\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/source_tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteRetweet"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteRetweet"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"unretweet\"]"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"unretweetConfirm\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/DeleteRetweet"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "bookmark",
+      "description": "Bookmark a post (private to you). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/aoDbu3RHznuiSkQ9aNM67Q/CreateBookmark",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\"},\"queryId\":\"aoDbu3RHznuiSkQ9aNM67Q\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateBookmark"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "CreateBookmark"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"bookmark\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/CreateBookmark"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "removeBookmark",
+      "description": "Remove a post from your bookmarks. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/graphql/Wlmlj2-xzyS1GN3a6cj-mQ/DeleteBookmark",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"variables\":{\"tweet_id\":\"1354143047324299264\"},\"queryId\":\"Wlmlj2-xzyS1GN3a6cj-mQ\"}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "tweetId",
+          "at": [
+            "body",
+            "json:/variables/tweet_id"
+          ]
+        }
+      ],
+      "volatile": [
+        {
+          "at": [
+            "path:3"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteBookmark"
+        },
+        {
+          "at": [
+            "body",
+            "json:/queryId"
+          ],
+          "shape": {
+            "charset": "base64url",
+            "length": 22
+          },
+          "anchor": "DeleteBookmark"
+        }
+      ],
+      "trigger": {
+        "url": "https://x.com/i/status/{tweetId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "article [data-testid=\"removeBookmark\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/graphql/*/DeleteBookmark"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json"
+      },
+      "params": [
+        {
+          "name": "tweetId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "the number at the end of a post's URL",
+          "description": "post ID: the number in x.com/<user>/status/<id>",
+          "example": "1354143047324299264"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "follow",
+      "description": "Follow an account (numeric user id). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/friendships/create.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "[data-testid$=\"-follow\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/friendships/create.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "unfollow",
+      "description": "Unfollow an account (numeric user id). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/friendships/destroy.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "steps": [
+          {
+            "action": "click",
+            "selector": "[data-testid$=\"-unfollow\"]"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"confirmationSheetConfirm\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/friendships/destroy.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "mute",
+      "description": "Mute an account: its posts leave your timelines; it isn't told. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/mutes/users/create.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/mutes/users/create.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "unmute",
+      "description": "Unmute an account. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/mutes/users/destroy.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/mutes/users/destroy.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "block",
+      "description": "Block an account: it can't see your posts or contact you. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/blocks/create.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/blocks/create.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "unblock",
+      "description": "Unblock an account. Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/blocks/destroy.json",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/x-www-form-urlencoded",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&include_ext_verified_type=1&include_ext_profile_image_shape=1&skip_status=1&user_id=11348282"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "userId",
+          "at": [
+            "form:user_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/i/user/{userId}",
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/blocks/destroy.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "pick": [
+          "id=id_str",
+          "screen_name",
+          "name",
+          "following",
+          "muting",
+          "blocking"
+        ]
+      },
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]{1,25}",
+          "hint": "a numeric user id (getUser's rest_id)",
+          "description": "numeric user id; getUser screen_name=<handle> gives it as rest_id",
+          "example": "11348282"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    },
+    {
+      "name": "sendDM",
+      "description": "Send a direct message in an existing conversation (conversation_id from dmInbox; a 1:1 chat is <smallerUserId>-<largerUserId>). Needs you signed in: crossbar login.",
+      "request": {
+        "method": "POST",
+        "url": "https://x.com/i/api/1.1/dm/new2.json?ext=mediaColor%2CaltText%2CmediaStats%2ChighlightedLabel%2CvoiceInfo%2CbirdwatchPivot%2CsuperFollowMetadata%2CunmentionInfo%2CeditControl%2Carticle&include_ext_alt_text=true&include_reply_count=1&tweet_mode=extended&include_groups=true&include_inbox_timelines=true&include_conversation_info=true&supports_reactions=true&supports_edit=true",
+        "headers": {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+          "content-type": "application/json",
+          "origin": "https://x.com",
+          "referer": "https://x.com/home",
+          "priority": "u=1, i",
+          "x-twitter-active-user": "yes",
+          "x-twitter-auth-type": "OAuth2Session",
+          "x-twitter-client-language": "en",
+          "x-csrf-token": "{ct0}"
+        },
+        "body": "{\"conversation_id\":\"11348282-783214\",\"recipient_ids\":false,\"request_id\":\"00000000-0000-4000-8000-000000000000\",\"text\":\"Hi from Crossbar\",\"cards_platform\":\"Web-12\",\"include_cards\":1,\"include_quote_count\":true,\"dm_users\":false}"
+      },
+      "slots": [
+        {
+          "ref": "cookie:ct0",
+          "at": [
+            "header:x-csrf-token"
+          ]
+        },
+        {
+          "param": "conversationId",
+          "at": [
+            "body",
+            "json:/conversation_id"
+          ]
+        },
+        {
+          "param": "text",
+          "at": [
+            "body",
+            "json:/text"
+          ]
+        },
+        {
+          "gen": "uuid",
+          "at": [
+            "body",
+            "json:/request_id"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://x.com/messages/{conversationId}",
+        "steps": [
+          {
+            "action": "fill",
+            "selector": "[data-testid=\"dmComposerTextInput\"]",
+            "value": "{text}"
+          },
+          {
+            "action": "click",
+            "selector": "[data-testid=\"dmComposerSendButton\"]"
+          }
+        ],
+        "companions": []
+      },
+      "match": {
+        "method": "POST",
+        "host": "x.com",
+        "path": "/i/api/1.1/dm/new2.json"
+      },
+      "response": {
+        "format": "json",
+        "contentType": "application/json",
+        "extract": "entries[0].message",
+        "pick": [
+          "message_id=id",
+          "conversation_id",
+          "text=message_data.text",
+          "time=message_data.time"
+        ]
+      },
+      "params": [
+        {
+          "name": "conversationId",
+          "type": "string",
+          "required": true,
+          "pattern": "[0-9]+(-[0-9]+)?",
+          "hint": "like 123-456 for a 1:1 chat",
+          "description": "conversation_id from dmInbox",
+          "example": "11348282-783214"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "the message",
+          "example": "Hi"
+        }
+      ],
+      "readOnly": false,
+      "public": [
+        "authorization"
+      ],
+      "minTier": 1,
+      "learnedLoggedIn": true
+    }
+  ]
+}

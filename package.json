@@ -1,0 +1,30 @@
+{
+  "name": "crossbar-x",
+  "version": "0.1.0",
+  "description": "Crossbar: your own X (Twitter) account as an MCP server and CLI, on Linux, macOS and Windows. Built on api-anything.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "crossbar": "bin/crossbar.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "spec/x.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "build:spec": "node scripts/build-spec.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "api-anything": "^0.3.2",
+    "zod": "^4.6.7"
+  },
+  "author": "Prantik Medhi"
+}
