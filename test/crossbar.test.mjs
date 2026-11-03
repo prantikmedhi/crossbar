@@ -88,6 +88,15 @@ test("home timeline: posts cleaned, ad dropped, cursor kept, signed-in headers s
   assert.equal(JSON.parse(req.url.searchParams.get("variables")).count, 5);
 });
 
+test("timeline: legacy-shaped author fills in, and no more posts than count", () => {
+  const picked = ["1", "2", "3"].map((id) => ({ entryId: `tweet-${id}`, id, text: "t", author_l: "dana", author_name_l: "Dana" }));
+  const r = x.timeline(picked, 2);
+  assert.deepEqual(r.posts.map((p) => p.id), ["1", "2"]);
+  assert.equal(r.posts[0].author, "dana");
+  assert.equal(r.posts[0].author_name, "Dana");
+  assert.equal(r.posts[0].url, "https://x.com/dana/status/1");
+});
+
 test("post: the exact text goes in CreateTweet and the new post's URL comes back", async () => {
   const r = await x.createPost({ text: 'Ship it — "quoted" & ✓' });
   assert.equal(r.ok, true, JSON.stringify(r));

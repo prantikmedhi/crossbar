@@ -149,7 +149,16 @@ function post(e) {
   });
 }
 
-const list = (data) => (Array.isArray(data) ? data : data ? [data] : []);
+/** Entries as a list, each `<field>_l` (X's older user shape, under legacy) filling a missing `<field>`. */
+const list = (data) =>
+  (Array.isArray(data) ? data : data ? [data] : []).map((e) => {
+    if (!e || typeof e !== "object") return e;
+    const out = { ...e };
+    for (const [k, v] of Object.entries(e)) if (k.endsWith("_l") && (out[k.slice(0, -2)] ?? "") === "") out[k.slice(0, -2)] = v;
+    return out;
+  });
+/** X answers a count with as many as it likes; keep what was asked for. */
+const upTo = (items, count) => (count ? items.slice(0, Number(count)) : items);
 const isAd = (e) => /^promoted|-promoted-/i.test(e.entryId ?? "");
 
 function cursors(entries) {
@@ -161,16 +170,17 @@ function cursors(entries) {
 }
 
 /** Timeline entries -> { posts, next_cursor }. */
-export function timeline(data) {
+export function timeline(data, count) {
   const entries = list(data);
-  const posts = entries.filter((e) => !isAd(e)).map(post).filter(Boolean);
+  // ponytail: the cursor still points past X's whole page, so a capped page skips the rest of it.
+  const posts = upTo(entries.filter((e) => !isAd(e)).map(post).filter(Boolean), count);
   const c = cursors(entries);
   return prune({ posts, next_cursor: c.bottom });
 }
 
-function users(data) {
+function users(data, count) {
   const entries = list(data);
-  const people = entries
+  const people = upTo(entries
     .filter((e) => e.id && !isAd(e))
     .map((e) =>
       prune({
@@ -185,7 +195,7 @@ function users(data) {
         you_follow: e.you_follow,
         follows_you: e.follows_you,
       }),
-    );
+    ), count);
   return prune({ users: people, next_cursor: cursors(entries).bottom });
 }
 
@@ -271,17 +281,17 @@ export async function whoami() {
 
 export async function home({ feed = "for_you", count, cursor } = {}) {
   const r = await run(feed === "following" ? "latestTimeline" : "homeTimeline", { count, cursor });
-  return r.ok ? answer(r, timeline(r.data)) : answer(r);
+  return r.ok ? answer(r, timeline(r.data, count)) : answer(r);
 }
 
 export async function search({ query, mode = "latest", count, cursor }) {
   if (mode === "people") {
     const r = await run("searchPeople", { query, count, cursor });
-    return r.ok ? answer(r, users(r.data)) : answer(r);
+    return r.ok ? answer(r, users(r.data, count)) : answer(r);
   }
   const product = { top: "Top", latest: "Latest", media: "Media" }[mode] ?? "Latest";
   const r = await run("searchPosts", { query, product, count, cursor });
-  return r.ok ? answer(r, timeline(r.data)) : answer(r);
+  return r.ok ? answer(r, timeline(r.data, count)) : answer(r);
 }
 
 export async function getPost({ post: p, cursor }) {
@@ -321,26 +331,26 @@ export async function profile({ user }) {
 
 export async function userPosts({ user, replies = false, count, cursor }) {
   const r = await run(replies ? "userReplies" : "userTweets", { userId: await userId(user), count, cursor });
-  return r.ok ? answer(r, timeline(r.data)) : answer(r);
+  return r.ok ? answer(r, timeline(r.data, count)) : answer(r);
 }
 
 export async function likes({ user, count, cursor } = {}) {
   const id = user ? await userId(user) : (await whoami()).data?.id;
   if (!id) return { ok: false, class: "auth", reason: "not signed in", next: "crossbar login" };
   const r = await run("likedPosts", { userId: id, count, cursor });
-  return r.ok ? answer(r, timeline(r.data)) : answer(r);
+  return r.ok ? answer(r, timeline(r.data, count)) : answer(r);
 }
 
 export async function bookmarks({ count, cursor } = {}) {
   const r = await run("bookmarks", { count, cursor });
-  return r.ok ? answer(r, timeline(r.data)) : answer(r);
+  return r.ok ? answer(r, timeline(r.data, count)) : answer(r);
 }
 
 export async function people({ user, which, count, cursor }) {
   const id = user ? await userId(user) : (await whoami()).data?.id;
   if (!id) return { ok: false, class: "auth", reason: "not signed in", next: "crossbar login" };
   const r = await run(which === "following" ? "following" : "followers", { userId: id, count, cursor });
-  return r.ok ? answer(r, users(r.data)) : answer(r);
+  return r.ok ? answer(r, users(r.data, count)) : answer(r);
 }
 
 export async function notifications({ count } = {}) {
