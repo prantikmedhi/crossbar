@@ -21,7 +21,7 @@ const UA =
 const QUERY_IDS = {
   HomeTimeline: "c-CzHF1LboFilMpsx4ZCrQ",
   HomeLatestTimeline: "BKB7oi212Fi7kQtCBGE4zA",
-  SearchTimeline: "VhUd6vHVmLBcw0uX-6jMLA",
+  SearchTimeline: "vLHjqbDv7TPFMBkIIO1nOA",
   TweetDetail: "_8aYOgEDz35BrBcBal1-_w",
   UserTweets: "Y9WM4Id6UcGFE8Z-hbnixw",
   UserTweetsAndReplies: "pz0IHaV_t7T4HJavqqqcIA",
